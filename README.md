@@ -29,8 +29,8 @@ It crawls a domain, builds a SQLite-backed retrieval index, and answers chat que
 ```env
 PORT=9191
 HOST=0.0.0.0
-SITE_NAME=SpyderServe
-DOMAINNAME=https://spyderserve.com
+SITE_NAME=Your Company Name
+DOMAINNAME=https://your-domain.com
 
 AI_RULES_FILE=data/ai-rules.txt
 
@@ -42,7 +42,7 @@ OLLAMA_NUM_PREDICT=180
 
 SCRAPER_MAX_PAGES=0
 # Optional forced URLs:
-# SCRAPER_EXTRA_URLS=https://spyderserve.com/about-us/,https://spyderserve.com/contact-us/
+# SCRAPER_EXTRA_URLS=https://your-domain.com/about-us/,https://your-domain.com/contact-us/
 ```
 
 2. Run:
@@ -80,7 +80,7 @@ Response:
 ```json
 {
   "reply": "We offer ...",
-  "domain": "https://spyderserve.com"
+  "domain": "https://your-domain.com"
 }
 ```
 
@@ -126,4 +126,3 @@ bun run dev
 - Ensure Ollama is running and model is pulled.
 - If `OLLAMA_HOST=localhost` in Docker, this project uses `network_mode: host`.
 - Pages not linked and not in sitemap may not be discovered automatically; use `SCRAPER_EXTRA_URLS`.
-
