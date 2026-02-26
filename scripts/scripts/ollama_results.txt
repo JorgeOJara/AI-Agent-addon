@@ -1,0 +1,15 @@
+Ollama Load Test Summary (2026-02-12T17:54:47.571Z)
+Target: http://localhost:11434
+Model: llama3.2
+Endpoint: chat
+Sweep: 1, 2, 5, 10, 15, 20, 30, 40
+Requests per level: 50
+c=..  req=..  ok=..  fail=..  tout=..  p50=.. p95=.. max=.. rps=.. wall=..
+c=1     req=50    ok=0        fail=50     tout=0      p50=0ms       p95=0ms       max=0ms       rps=0.00        wall=140ms
+c=2     req=50    ok=0        fail=50     tout=0      p50=0ms       p95=0ms       max=0ms       rps=0.00        wall=19ms
+c=5     req=50    ok=0        fail=50     tout=0      p50=0ms       p95=0ms       max=0ms       rps=0.00        wall=6ms
+c=10    req=50    ok=0        fail=50     tout=0      p50=0ms       p95=0ms       max=0ms       rps=0.00        wall=8ms
+c=15    req=50    ok=0        fail=50     tout=0      p50=0ms       p95=0ms       max=0ms       rps=0.00        wall=6ms
+c=20    req=50    ok=0        fail=50     tout=0      p50=0ms       p95=0ms       max=0ms       rps=0.00        wall=7ms
+c=30    req=50    ok=0        fail=50     tout=0      p50=0ms       p95=0ms       max=0ms       rps=0.00        wall=4ms
+c=40    req=50    ok=0        fail=50     tout=0      p50=0ms       p95=0ms       max=0ms       rps=0.00        wall=2ms

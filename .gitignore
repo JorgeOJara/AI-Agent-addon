@@ -1,0 +1,7 @@
+node_modules/
+.env
+data/cache.db
+data/sessions.json
+data/leads.json
+.DS_Store
+*.log

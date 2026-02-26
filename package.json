@@ -1,0 +1,21 @@
+{
+  "name": "ai-site-chatbot",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "bun run --watch src/server.ts",
+    "start": "bun run src/server.ts",
+    "index": "bun run src/indexer.ts",
+    "scrape": "bun run src/indexer.ts",
+    "loadtest": "bun run scripts/loadtest.ts",
+    "loadtest:compose": "bash scripts/loadtest.sh",
+    "ollama:loadtest": "bun run scripts/ollama_loadtest.ts",
+    "ollama:compose": "bash scripts/ollama_stress_test.sh"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "hono": "^4.4.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}

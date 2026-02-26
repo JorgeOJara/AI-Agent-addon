@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Site Assistant</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd', 300: '#7dd3fc', 400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .msg-enter { animation: msgIn 0.25s ease-out; }
+    @keyframes msgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .typing-dot { animation: blink 1.4s infinite both; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes blink { 0%,80%,100% { opacity: 0.2; } 40% { opacity: 1; } }
+    #chat-messages::-webkit-scrollbar { width: 6px; }
+    #chat-messages::-webkit-scrollbar-track { background: transparent; }
+    #chat-messages::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    .prose p { margin-bottom: 0.5em; }
+    .prose ul, .prose ol { margin-left: 1.25em; margin-bottom: 0.5em; }
+    .prose li { margin-bottom: 0.2em; }
+  </style>
+</head>
+<body class="h-full bg-gray-50 text-gray-900 flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shrink-0 shadow-sm">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg bg-brand-500 flex items-center justify-center">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+      </div>
+      <div>
+        <h1 class="text-lg font-semibold leading-tight" id="site-title">AI Site Assistant</h1>
+        <p class="text-xs text-gray-500" id="site-subtitle">Ask anything about the website</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <span id="status-badge" class="text-xs px-2.5 py-1 rounded-full font-medium bg-green-100 text-green-700">Ready</span>
+      <button id="scrape-btn" onclick="startScrape()" style="display:none" class="text-sm px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        Scrape Site
+      </button>
+    </div>
+  </header>
+
+  <!-- Chat Area -->
+  <main class="flex-1 overflow-hidden flex flex-col max-w-4xl w-full mx-auto">
+    <!-- Messages -->
+    <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4">
+      <!-- Welcome message -->
+      <div id="welcome" class="flex flex-col items-center justify-center h-full text-center px-4">
+        <div class="w-16 h-16 rounded-2xl bg-brand-100 flex items-center justify-center mb-4">
+          <svg class="w-8 h-8 text-brand-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/></svg>
+        </div>
+        <h2 class="text-xl font-semibold mb-2">Welcome to the AI Site Assistant</h2>
+        <p class="text-gray-500 max-w-md mb-6">I can answer questions about website content. Enter a Site ID below and ask your question. The server will resolve the site and load data automatically.</p>
+        <div id="info-cards" class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-lg">
+          <div class="bg-white rounded-xl border border-gray-200 p-3 text-left">
+            <div class="text-brand-500 font-semibold text-sm mb-1">1. Enter Site ID</div>
+            <p class="text-xs text-gray-500">We'll resolve it to the website domain</p>
+          </div>
+          <div class="bg-white rounded-xl border border-gray-200 p-3 text-left">
+            <div class="text-brand-500 font-semibold text-sm mb-1">2. Ask</div>
+            <p class="text-xs text-gray-500">Type any question about the site</p>
+          </div>
+          <div class="bg-white rounded-xl border border-gray-200 p-3 text-left">
+            <div class="text-brand-500 font-semibold text-sm mb-1">3. Answers</div>
+            <p class="text-xs text-gray-500">You get responses from the site's content</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="shrink-0 border-t border-gray-200 bg-white p-4">
+      <form id="chat-form" onsubmit="sendMessage(event)" class="flex gap-2 items-center">
+        <input
+          id="site-id-input"
+          type="text"
+          placeholder="Site ID (e.g. demo123)"
+          autocomplete="off"
+          class="w-40 px-3 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent text-sm transition"
+        />
+        <input
+          id="chat-input"
+          type="text"
+          placeholder="Ask a question about this site..."
+          autocomplete="off"
+          class="flex-1 px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent text-sm transition disabled:opacity-50 disabled:bg-gray-50"
+        />
+        <button
+          id="send-btn"
+          type="submit"
+          class="px-4 py-3 bg-brand-500 hover:bg-brand-600 text-white rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+          Send
+        </button>
+      </form>
+      <p class="text-xs text-gray-400 text-center mt-2" id="footer-info">Powered by Ollama · Answers only from the resolved website</p>
+    </div>
+  </main>
+
+<script>
+  // Generate a simple session id and keep it for this browser tab.
+  const SESSION_KEY = 'ai_site_session_id';
+  let sessionId = localStorage.getItem(SESSION_KEY);
+  if (!sessionId) {
+    sessionId = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem(SESSION_KEY, sessionId);
+  }
+const messagesEl = document.getElementById('chat-messages');
+// Keep a simple local chat history so the server can
+// recognize previously provided contact details and context.
+const chatHistory = [];
+const welcomeEl = document.getElementById('welcome');
+const inputEl = document.getElementById('chat-input');
+const sendBtn = document.getElementById('send-btn');
+const scrapeBtn = document.getElementById('scrape-btn');
+const siteIdInput = document.getElementById('site-id-input');
+const statusBadge = document.getElementById('status-badge');
+const siteTitle = document.getElementById('site-title');
+const siteSubtitle = document.getElementById('site-subtitle');
+
+let history = [];
+let isReady = true; // default to ready so sending always works
+let isSending = false;
+const pendingMessages = [];
+
+// Check status on load (legacy status no longer required to chat)
+async function checkStatus() {
+  try {
+    // Hide legacy scrape UI and mark ready for new flow
+    if (scrapeBtn) scrapeBtn.style.display = 'none';
+    statusBadge.textContent = 'Ready';
+    statusBadge.className = 'text-xs px-2.5 py-1 rounded-full font-medium bg-green-100 text-green-700';
+  } catch {}
+  setReady(0);
+}
+
+function setReady(pages) {
+  isReady = true;
+  statusBadge.textContent = 'Ready';
+  statusBadge.className = 'text-xs px-2.5 py-1 rounded-full font-medium bg-green-100 text-green-700';
+  if (scrapeBtn) scrapeBtn.style.display = 'none';
+  inputEl.disabled = false;
+  sendBtn.disabled = false;
+  inputEl.placeholder = 'Ask a question about this site...';
+  inputEl.focus();
+}
+
+function setScraping() {
+  statusBadge.textContent = 'Scraping...';
+  statusBadge.className = 'text-xs px-2.5 py-1 rounded-full font-medium bg-blue-100 text-blue-700 animate-pulse';
+  scrapeBtn.disabled = true;
+  scrapeBtn.textContent = 'Scraping...';
+}
+
+async function startScrape() {
+  setScraping();
+  try {
+    const res = await fetch('/api/scrape', { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      setReady(data.pages);
+      addBotMessage(`Website scraped successfully! I loaded **${data.pages} pages**. Go ahead and ask me anything about the site.`);
+    } else {
+      statusBadge.textContent = 'Error';
+      statusBadge.className = 'text-xs px-2.5 py-1 rounded-full font-medium bg-red-100 text-red-700';
+      scrapeBtn.disabled = false;
+      scrapeBtn.textContent = 'Retry Scrape';
+      addBotMessage(`Scraping failed: ${data.error}. Please check the domain in your .env file.`);
+    }
+  } catch (err) {
+    scrapeBtn.disabled = false;
+    scrapeBtn.textContent = 'Retry Scrape';
+    addBotMessage('Failed to connect to the server. Is it running?');
+  }
+}
+
+function hideWelcome() {
+  if (welcomeEl) welcomeEl.style.display = 'none';
+}
+
+function addUserMessage(text) {
+  hideWelcome();
+  const div = document.createElement('div');
+  div.className = 'flex justify-end msg-enter';
+  div.innerHTML = `<div class="max-w-[75%] bg-brand-500 text-white px-4 py-3 rounded-2xl rounded-br-md text-sm whitespace-pre-wrap">${escapeHtml(text)}</div>`;
+  messagesEl.appendChild(div);
+  scrollDown();
+  // Track in history
+  chatHistory.push({ role: 'user', content: text });
+}
+
+function addBotMessage(text) {
+  hideWelcome();
+  const div = document.createElement('div');
+  div.className = 'flex justify-start msg-enter';
+  div.innerHTML = `
+    <div class="flex gap-2 max-w-[80%]">
+      <div class="w-7 h-7 rounded-lg bg-brand-100 flex items-center justify-center shrink-0 mt-1">
+        <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
+      </div>
+      <div class="bg-white border border-gray-200 px-4 py-3 rounded-2xl rounded-bl-md text-sm prose">${formatMarkdown(text)}</div>
+    </div>`;
+  messagesEl.appendChild(div);
+  scrollDown();
+  return div.querySelector('.prose');
+}
+
+function addTypingIndicator() {
+  hideWelcome();
+  const div = document.createElement('div');
+  div.id = 'typing';
+  div.className = 'flex justify-start msg-enter';
+  div.innerHTML = `
+    <div class="flex gap-2">
+      <div class="w-7 h-7 rounded-lg bg-brand-100 flex items-center justify-center shrink-0 mt-1">
+        <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
+      </div>
+      <div class="bg-white border border-gray-200 px-4 py-3 rounded-2xl rounded-bl-md flex gap-1.5 items-center">
+        <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+        <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+        <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+      </div>
+    </div>`;
+  messagesEl.appendChild(div);
+  scrollDown();
+}
+
+function removeTyping() {
+  document.getElementById('typing')?.remove();
+}
+
+// Prepare site RAG index before chatting
+let preparedSiteId = null;
+async function prepareSite(siteId) {
+  if (preparedSiteId === siteId) return true;
+  try {
+    statusBadge.textContent = 'Preparing...';
+    statusBadge.className = 'text-xs px-2.5 py-1 rounded-full font-medium bg-blue-100 text-blue-700 animate-pulse';
+    const res = await fetch('/api/prep', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ siteId })
+    });
+    const data = await res.json();
+    if (res.ok && data.ok) {
+      preparedSiteId = siteId;
+      setReady(0);
+      return true;
+    } else {
+      addBotMessage(data.error || 'Failed to prepare site.');
+      statusBadge.textContent = 'Error';
+      statusBadge.className = 'text-xs px-2.5 py-1 rounded-full font-medium bg-red-100 text-red-700';
+      return false;
+    }
+  } catch (e) {
+    addBotMessage('Failed to prepare the site. Is the server running?');
+    statusBadge.textContent = 'Error';
+    statusBadge.className = 'text-xs px-2.5 py-1 rounded-full font-medium bg-red-100 text-red-700';
+    return false;
+  }
+}
+
+async function processNextMessage() {
+  if (isSending) return;
+  if (!pendingMessages.length) return;
+  isSending = true;
+  const { text, siteId } = pendingMessages.shift();
+
+  addTypingIndicator();
+
+  try {
+    // Prefer streaming for faster perceived latency; fallback to non-streaming
+    let usedStreaming = false;
+    try {
+      const controller = new AbortController();
+      const firstTokenTimeout = setTimeout(() => controller.abort(), 3000);
+      const hardTimeout = setTimeout(() => controller.abort(), 25000);
+      const res = await fetch('/api/chat/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, siteId, history: chatHistory.slice(-6), sessionId }),
+        signal: controller.signal
+      });
+      const ct = res.headers.get('Content-Type') || '';
+      if (ct.includes('application/json')) {
+        clearTimeout(firstTokenTimeout);
+        clearTimeout(hardTimeout);
+        const data = await res.json();
+        removeTyping();
+        addBotMessage(data.reply || data.error || 'Something went wrong.');
+        usedStreaming = true;
+      } else if (res.ok && res.body) {
+        const prose = addBotMessage('');
+        let first = true;
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let acc = '';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          if (first) {
+            clearTimeout(firstTokenTimeout);
+            first = false;
+            usedStreaming = true;
+            removeTyping();
+          }
+          acc += chunk;
+          if (prose) prose.innerHTML = formatMarkdown(acc);
+          scrollDown();
+        }
+        clearTimeout(hardTimeout);
+        if (first) removeTyping();
+        chatHistory.push({ role: 'assistant', content: acc });
+      } else {
+        clearTimeout(firstTokenTimeout);
+        clearTimeout(hardTimeout);
+      }
+    } catch (err) {
+      // Ignore and fallback
+    }
+
+    if (!usedStreaming) {
+      try {
+        const controller2 = new AbortController();
+        const timeoutId2 = setTimeout(() => controller2.abort(), 20000);
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, siteId, history: chatHistory.slice(-6), sessionId }),
+          signal: controller2.signal
+        });
+        clearTimeout(timeoutId2);
+        removeTyping();
+        const data = await res.json();
+        const bot = data.reply || data.error || 'Something went wrong.';
+        addBotMessage(bot);
+        chatHistory.push({ role: 'assistant', content: bot });
+      } catch (err) {
+        removeTyping();
+        addBotMessage('Could not connect to the server.');
+      }
+    }
+  } finally {
+    isSending = false;
+    removeTyping();
+    if (pendingMessages.length) {
+      void processNextMessage();
+    }
+  }
+}
+
+async function sendMessage(e) {
+  e.preventDefault();
+  const text = inputEl.value.trim();
+  const siteId = siteIdInput.value.trim() || 'demo';
+  if (!text) return;
+
+  inputEl.value = '';
+  addUserMessage(text);
+  pendingMessages.push({ text, siteId });
+  void processNextMessage();
+  inputEl.focus();
+}
+
+function enableInput() {
+  inputEl.disabled = false;
+  sendBtn.disabled = false;
+  inputEl.focus();
+}
+
+function scrollDown() {
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function formatMarkdown(text) {
+  return text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/`(.*?)`/g, '<code class="bg-gray-100 px-1 py-0.5 rounded text-xs">$1</code>')
+    .replace(/\n- /g, '\n<li>').replace(/\n\d+\. /g, '\n<li>')
+    .replace(/\n/g, '<br/>');
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+  checkStatus();
+  // Hard fallback to ensure input is enabled even if a prior error prevented UI update
+  setTimeout(() => {
+    if (sendBtn.disabled || inputEl.disabled) {
+      try { enableInput(); } catch {}
+    }
+    if (statusBadge && statusBadge.textContent !== 'Ready') {
+      try { setReady(0); } catch {}
+    }
+  }, 800);
+});
+
+inputEl.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    sendMessage(e);
+  }
+});
+</script>
+</body>
+</html>

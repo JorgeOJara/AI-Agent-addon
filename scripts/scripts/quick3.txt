@@ -1,0 +1,11 @@
+Ollama Load Test Summary (2026-02-12T18:05:58.236Z)
+Target: http://localhost:11434
+Model: llama3.2
+Host: Mac.spyderserve.local (darwin/arm64, 1 vCPU, 8.0 GB RAM)
+Endpoint: chat
+Sweep: 1
+Duration per level: 1000ms
+Invocation: bun run scripts/ollama_loadtest.ts --url http://localhost:11434 --model llama3.2 --endpoint chat --stream false --sweep 1 --duration 1000
+c=..  req=..  ok=..  fail=..  tout=..  p50=.. p95=.. max=.. rps=.. wall=..
+c=1     req=20457  ok=0        fail=20457  tout=0      p50=0ms       p95=0ms       max=0ms       rps=0.00        wall=995ms
+

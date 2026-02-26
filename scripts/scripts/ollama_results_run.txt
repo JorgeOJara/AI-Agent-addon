@@ -1,0 +1,9 @@
+Ollama Load Test Summary (2026-02-12T18:02:54.563Z)
+Target: http://localhost:11434
+Model: llama3.2
+Endpoint: chat
+Sweep: 10
+Duration per level: 60000ms
+c=..  req=..  ok=..  fail=..  tout=..  p50=.. p95=.. max=.. rps=.. wall=..
+c=10    req=250968  ok=0        fail=250968  tout=0      p50=0ms       p95=0ms       max=0ms       rps=0.00        wall=59999ms
+
