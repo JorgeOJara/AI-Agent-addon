@@ -34,7 +34,7 @@ DOMAINNAME=https://your-domain.com
 
 AI_RULES_FILE=data/ai-rules.txt
 
-OLLAMA_HOST=localhost
+OLLAMA_HOST=host.docker.internal
 OLLAMA_PORT=11434
 OLLAMA_MODEL=llama3.2:3b
 OLLAMA_NUM_CTX=8192
@@ -48,7 +48,7 @@ SCRAPER_MAX_PAGES=0
 2. Run:
 
 ```bash
-PORT=9191 docker compose up -d --build
+docker compose up -d --build
 ```
 
 3. Check status:
@@ -124,5 +124,6 @@ bun run dev
 ## Notes
 
 - Ensure Ollama is running and model is pulled.
-- If `OLLAMA_HOST=localhost` in Docker, this project uses `network_mode: host`.
+- In Docker bridge mode, use `OLLAMA_HOST=host.docker.internal` so the app can reach Ollama on the host.
+- `docker compose up -d --build` is enough; the API port is published from `.env` (`PORT`, default `9191`).
 - Pages not linked and not in sitemap may not be discovered automatically; use `SCRAPER_EXTRA_URLS`.
