@@ -1,10 +1,17 @@
+name: ai-agent-addon
+
 services:
   app:
     build: .
-    container_name: ai-chatbot
-    network_mode: host
+    ports:
+      - "9191:9191"
     env_file:
       - .env
+    environment:
+      - PORT=9191
+      - HOST=0.0.0.0
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - app_data:/app/data
     restart: unless-stopped
